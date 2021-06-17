@@ -783,7 +783,7 @@ class EagarTsai():
         figures = []
         axes = []
         for i in range(3):
-            fig = plt.figure(dpi = 90)#dpi = 300, figsize = [4,3])
+            fig = plt.figure(dpi = 90)
             figures.append(fig)
             axes.append(fig.add_subplot(1, 1, 1))
         xcurrent = np.argmax(self.theta[:, len(self.ys)//2, -1])
