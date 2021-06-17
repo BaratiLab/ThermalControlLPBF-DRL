@@ -208,7 +208,7 @@ def zigzag(plotting = False, resolution = 10e-6, bc = 'flux'):
     os.system(z_oscommand)
     os.system(rmcommand)
 
-
+    plt.clf()
     plt.plot(np.array(times)*1e3, np.array(depth)*1e6)
     plt.xlabel(r'Time, $t$ [ms]')
     plt.ylabel(r'Melt Depth, $d$, [$\mu$m]')
@@ -223,7 +223,9 @@ def closezigzag(plotting = False, resolution = 20e-6, bc = 'flux'):
     times.append(0)
     depth.append(0) 
     c = 0
+    res_text = str(int(resolution/1e-6))
     file_prefix = "figures/baseline_simulation_figs/closezz" + '_' + res_text + '_' + bc + '/'
+    os.makedirs(file_prefix, exist_ok = True)
     for iter in range(21):
 
         print(iter, "ITER", zz.time, "TIME")
@@ -281,7 +283,7 @@ def closezigzag(plotting = False, resolution = 20e-6, bc = 'flux'):
     os.system(y_oscommand)
     os.system(z_oscommand)
     os.system(rmcommand)
-
+    plt.clf()
     plt.plot(np.array(times)*1e3, np.array(depth)*1e6)
     plt.xlabel(r'Time, $t$ [ms]')
     plt.ylabel(r'Melt Depth, $d$, [$\mu$m]')
@@ -297,7 +299,9 @@ def diagonal(plotting = False, resolution = 20e-6, bc = 'flux'):
     times.append(0)
     V = 0.8
     h = (1000e-6)/7
+    res_text = str(int(resolution/1e-6))
     file_prefix = "figures/baseline_simulation_figs/diag" + '_' + res_text + '_' + bc + '/'
+    os.makedirs(file_prefix, exist_ok = True)
     for i in range(27):
         if i < 14:
             idx = ((i + 1)/2)
@@ -368,7 +372,7 @@ def diagonal(plotting = False, resolution = 20e-6, bc = 'flux'):
     os.system(y_oscommand)
     os.system(z_oscommand)
     os.system(rmcommand)
-
+    plt.clf()
     plt.plot(np.array(times)*1e3, np.array(depth)*1e6)
     plt.xlabel(r'Time, $t$ [ms]')
     plt.ylabel(r'Melt Depth, $d$, [$\mu$m]')
@@ -384,7 +388,9 @@ def triangle(plotting = False, resolution = 5e-6, bc = 'temp'):
     times = []
     depth.append(0) 
     times.append(0)
+    res_text = str(int(resolution/1e-6))
     file_prefix = "figures/baseline_simulation_figs/triangle" + '_' + res_text + '_' + bc + '/'
+    os.makedirs(file_prefix, exist_ok = True)
     for i in range(12):
         plt.close('all')
         V = 0.8
@@ -427,7 +433,7 @@ def triangle(plotting = False, resolution = 5e-6, bc = 'temp'):
     os.system(y_oscommand)
     os.system(z_oscommand)
     os.system(rmcommand)
-    
+    plt.clf()
     
     plt.plot(np.array(times)*1e3, np.array(depth)*1e6)
     plt.xlabel(r'Time, $t$ [ms]')
@@ -438,7 +444,6 @@ def triangle(plotting = False, resolution = 5e-6, bc = 'temp'):
   
 def main():
     # Test cases: zigzag, square, triangle, diagonal
-    os.makedirs('figures/baseline_simulation_figs', exist_ok = True)
     plotting = sys.argv[1] == 'True'
     zigzag(resolution = 20e-6, plotting = plotting, bc = 'flux')
     diagonal(resolution = 20e-6, plotting = plotting, bc = 'flux')
