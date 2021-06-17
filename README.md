@@ -1,8 +1,8 @@
 # Thermal Control of Laser Powder Bed Fusion using Deep Reinforcement Learning
-![drl_am](https://user-images.githubusercontent.com/45725578/122481556-e3491f00-cf9c-11eb-89c4-f8014b72b9a1.gif)
 
 
 This repository is the implementation of the paper "Thermal Control of Laser Powder Bed Fusion Using Deep Reinforcement Learning". The project makes use of the Deep Reinforcement Library [stable-baselines3](https://github.com/DLR-RM/stable-baselines3) to derive a control policy that maximizes melt pool depth consistency.
+![drl_am](https://user-images.githubusercontent.com/45725578/122481556-e3491f00-cf9c-11eb-89c4-f8014b72b9a1.gif)
 
 ## Simulation Framework
 The Repeated Usage of Stored Line Solutions (RUSLS) method proposed by Wolfer et al. is used to simulate the temperature dynamics in this work. More detail can be found in the following paper:
