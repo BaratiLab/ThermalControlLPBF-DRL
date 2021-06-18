@@ -35,7 +35,7 @@ The overall workflow for this project first defines a ```gym``` environment base
 
 To test a trained model on a specific combination of scan path and control parameter, enter this command:
 
-```python evaluate_learned_policy.py --path [scan_path] -param [parameter]``` 
+```python evaluate_learned_policy.py --path [scan_path] --param [parameter]``` 
 
  Note: ```[scan_path]```  should be replaced by ```square``` for the horizontal cross-hatching scan path and ```triangle``` for the concentric triangular path. ```[parameter]``` should be replaced by ```power``` to specify power as a control parameter, and ```velocity``` to specify velocity as a control parameter.
   
