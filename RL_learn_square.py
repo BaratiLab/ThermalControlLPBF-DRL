@@ -1,11 +1,13 @@
+from stable_baselines3.common.monitor import load_results
+import pandas as pd
+from typing import Tuple, Callable, List, Optional
 import gym
 import json
-import datetime as dt
 #from stable_baselines3.common.policies import MlpPolicy
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize
 from stable_baselines3 import PPO, A2C
 
-from velocity_square_gym import EnvRLAM as timesquareEnvRLAM
+from velocity_square_gym import EnvRLAM as velocitysquareEnvRLAM
 
 from power_square_gym import EnvRLAM as powersquareEnvRLAM
 
@@ -29,7 +31,6 @@ from stable_baselines3.common.noise import NormalActionNoise
 from stable_baselines3.common.callbacks import BaseCallback
 
 
-
 from stable_baselines3.common.vec_env import VecEnvWrapper
 import numpy as np
 import time
@@ -41,19 +42,21 @@ import csv
 # Dependencies: Pytorch, Tensorboard
 
 # Plotting code segments taken from OpenAI Gym
+
+
 class VecMonitor(VecEnvWrapper):
     EXT = "monitor.csv"
-    
+
     def __init__(self, venv, filename=None, keep_buf=0, info_keywords=()):
         VecEnvWrapper.__init__(self, venv)
-        print('init vecmonitor: ',filename)
+        print('init vecmonitor: ', filename)
         self.eprets = None
         self.eplens = None
         self.epcount = 0
         self.tstart = time.time()
         if filename:
             self.results_writer = ResultsWriter(filename, header={'t_start': self.tstart},
-                extra_keys=info_keywords)
+                                                extra_keys=info_keywords)
         else:
             self.results_writer = None
         self.info_keywords = info_keywords
@@ -79,7 +82,8 @@ class VecMonitor(VecEnvWrapper):
                 info = infos[i].copy()
                 ret = self.eprets[i]
                 eplen = self.eplens[i]
-                epinfo = {'r': ret, 'l': eplen, 't': round(time.time() - self.tstart, 6)}
+                epinfo = {'r': ret, 'l': eplen, 't': round(
+                    time.time() - self.tstart, 6)}
                 for k in self.info_keywords:
                     epinfo[k] = info[k]
                 info['episode'] = epinfo
@@ -95,6 +99,7 @@ class VecMonitor(VecEnvWrapper):
         return obs, rews, dones, newinfos
 # Monitoring code segments taken from OpenAI Gym
 
+
 class ResultsWriter(object):
     def __init__(self, filename, header='', extra_keys=()):
         print('init resultswriter')
@@ -104,21 +109,20 @@ class ResultsWriter(object):
             if osp.isdir(filename):
                 filename = osp.join(filename, VecMonitor.EXT)
             else:
-                filename = filename #   + "." + VecMonitor.EXT
+                filename = filename  # + "." + VecMonitor.EXT
         self.f = open(filename, "wt")
         if isinstance(header, dict):
             header = '# {} \n'.format(json.dumps(header))
         self.f.write(header)
-        self.logger = csv.DictWriter(self.f, fieldnames=('r', 'l', 't')+tuple(extra_keys))
+        self.logger = csv.DictWriter(
+            self.f, fieldnames=('r', 'l', 't')+tuple(extra_keys))
         self.logger.writeheader()
         self.f.flush()
 
     def write_row(self, epinfo):
         if self.logger:
             self.logger.writerow(epinfo)
-            self.f.flush()    
-
-
+            self.f.flush()
 
 
 # Monitoring code segments taken from OpenAI Gym
@@ -133,6 +137,7 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
       It must contains the file created by the ``Monitor`` wrapper.
     :param verbose: (int)
     """
+
     def __init__(self, check_freq: int, log_dir: str, verbose=1):
         super(SaveOnBestTrainingRewardCallback, self).__init__(verbose)
         self.check_freq = check_freq
@@ -155,7 +160,8 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
               mean_reward = np.mean(y[-100:])
               if self.verbose > 0:
                 print(f"Num timesteps: {self.num_timesteps}")
-                print(f"Best mean reward: {self.best_mean_reward:.2f} - Last mean reward per episode: {mean_reward:.2f}")
+                print(
+                    f"Best mean reward: {self.best_mean_reward:.2f} - Last mean reward per episode: {mean_reward:.2f}")
 
               # New best model, you could save the agent here
               if mean_reward > self.best_mean_reward:
@@ -168,19 +174,7 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
         return True
 
 
-
-
 # Plotting code segments taken from OpenAI Gym
-
-from typing import Tuple, Callable, List, Optional
-
-import numpy as np
-import pandas as pd
-# import matplotlib
-# matplotlib.use('TkAgg')  # Can change to 'Agg' for non-interactive mode
-import matplotlib.pyplot as plt
-
-from stable_baselines3.common.monitor import load_results
 
 
 X_TIMESTEPS = 'timesteps'
@@ -222,7 +216,7 @@ nction
 
 
 def ts2xy(data_frame: pd.DataFrame, x_axis: str) -> Tuple[np.ndarray, np.ndarray
-]:
+                                                          ]:
     """
     Decompose a data frame variable to x ans ys
 
@@ -248,7 +242,7 @@ lltime_hrs')
 
 
 def plot_curves(xy_list: List[Tuple[np.ndarray, np.ndarray]],
-                x_axis: str, title: str, figsize: Tuple[int, int] = (8, 2)):# -> None:
+                x_axis: str, title: str, figsize: Tuple[int, int] = (8, 2)):  # -> None:
     """
     plot the curves
 
@@ -280,7 +274,7 @@ lltime_hrs')
 
 
 def plot_results(dirs: List[str], num_timesteps: Optional[int],
-                 x_axis: str, task_name: str, figsize: Tuple[int, int] = (8, 2)): #-> None:
+                 x_axis: str, task_name: str, figsize: Tuple[int, int] = (8, 2)):  # -> None:
     """
     Plot the results using csv files from ``Monitor`` wrapper.
 
@@ -292,7 +286,7 @@ lltime_hrs')
     :param task_name: (str) the title of the task to plot
     :param figsize: (Tuple[int, int]) Size of the figure (width, height)
     """
-   
+
     data_frames = []
     for folder in dirs:
         data_frame = load_results(folder)
@@ -305,25 +299,30 @@ lltime_hrs')
 
 th.autograd.set_detect_anomaly(True)
 
+
 def parse_arguments():
     # Command-line flags are defined here.
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', dest='debug',
-                              action='store_true',
-                              help="Whether to enter debugging mode") 
-    parser.add_argument('--param', dest='param', default = 'velocity',
-        help="Which control parameter to vary, options are 'velocity' and 'power' ") 
-
+                        action='store_true',
+                        help="Whether to enter debugging mode")
+    parser.add_argument('--param', dest='param', default='velocity',
+                        help="Which control parameter to vary, options are 'velocity' and 'power' ")
+    parser.add_argument('--verbose', dest='verbose', default='0',
+                        help="How much output to display during training ")
     parser.set_defaults(debug=False)
 
     return parser.parse_args()
+
+
 def main():
     args = parse_arguments()
     debug = args.debug
+    verbose = int(args.verbose)
     #num_cpu = 1 #-> single process
-    num_cpu = 8 # Number of processes to use
+    num_cpu = 8  # Number of processes to use
     # Create the vectorized environment
-   
+
     parameter = args.param
 
     log_dir = "training_checkpoints/ppo_square_"+parameter
@@ -334,47 +333,56 @@ def main():
     tb_logdir = 'tensorboard_logs/'
     os.makedirs(tb_logdir, exist_ok=True)
     if parameter == 'velocity':
-        
+
         if debug:
             print("debugging")
             num_cpu = 1
-            
-            env = powersquareEnvRLAM(frameskip = frameskip)
+
+            env = velocitysquareEnvRLAM(
+                plot=False, frameskip=frameskip, verbose=verbose)
         else:
-            env = SubprocVecEnv([make_env(timesquareEnvRLAM(plot = False), i) for i in range(num_cpu)])
+            env = SubprocVecEnv([make_env(velocitysquareEnvRLAM(
+                plot=False, frameskip=frameskip, verbose=verbose), i) for i in range(num_cpu)])
             env = VecMonitor(env, log_dir)
     elif parameter == 'power':
-        
+
         if debug:
             print("debugging")
             num_cpu = 1
-            env = powersquareEnvRLAM(frameskip = frameskip)
+            env = powersquareEnvRLAM(
+                plot=False, frameskip=frameskip, verbose=verbose)
         else:
-            env = SubprocVecEnv([make_env(powersquareEnvRLAM(plot = False), i) for i in range(num_cpu)])
+            env = SubprocVecEnv([make_env(powersquareEnvRLAM(
+                plot=False, frameskip=frameskip, verbose=verbose), i) for i in range(num_cpu)])
             env = VecMonitor(env, log_dir)
 
     else:
-        raise Exception("Control parameter not found, please enter 'power' or 'velocity' as argument")
-
+        raise Exception(
+            "Control parameter not found, please enter 'power' or 'velocity' as argument")
 
     if not debug:
         print("Training, vectorized")
     policy_kwargs = dict(activation_fn=th.nn.Tanh, net_arch=[64, 64])
-    model = PPO('MlpPolicy',env, verbose=1, policy_kwargs=policy_kwargs,  tensorboard_log=tb_logdir+"ppo_square_" + parameter)
-  
-    callback = SaveOnBestTrainingRewardCallback(check_freq=1000, log_dir=log_dir)
+    model = PPO('MlpPolicy', env, verbose=1, policy_kwargs=policy_kwargs,
+                tensorboard_log=tb_logdir+"ppo_square_" + parameter)
+
+    callback = SaveOnBestTrainingRewardCallback(
+        check_freq=1000, log_dir=log_dir)
     timesteps = 4000000
-    model.learn(total_timesteps=timesteps, tb_log_name="ppo_square_" + parameter, callback=callback)
-    
+    model.learn(total_timesteps=timesteps,
+                tb_log_name="ppo_square_" + parameter, callback=callback)
+
     plot_results([log_dir], timesteps, results_plotter.X_TIMESTEPS, "RL_AM")
     plt.show()
-    model.save("trained_models/ppo_square_" + parameter +'_' + str(frameskip))
+    model.save("trained_models/ppo_square_" + parameter + '_' + str(frameskip))
+
 
 def make_env(env_id, rank, seed=0):
 
     def _init():
         return env_id
     return _init
+
 
 if __name__ == "__main__":
     main()

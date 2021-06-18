@@ -1,0 +1,8 @@
+numba==0.50.1
+torch==1.5.0
+matplotlib==3.4.2
+gym==0.17.3
+numpy==1.19.2
+scipy==1.6.3
+stable_baselines3==0.7.0
+pandas==1.1.0

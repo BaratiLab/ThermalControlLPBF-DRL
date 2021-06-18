@@ -73,30 +73,29 @@ def main():
     model_filename = input("Enter filename of model zip file: ")
     if path == 'square':
         if parameter == 'power':
-            env = powersquareEnvRLAM(plot = True, frameskip= 1, plotlast = False)
+            env = powersquareEnvRLAM(plot = True, frameskip= 1)
             
 
         elif parameter == 'velocity':
             
-            env = velocitysquareEnvRLAM(plot = True, frameskip= 1, plotlast = False)
+            env = velocitysquareEnvRLAM(plot = True, frameskip= 1)
     if path == 'triangle':
     
         if parameter == 'power':
 
-            env = powertriangleEnvRLAM(plot = True, frameskip= 2, plotlast = False)
+            env = powertriangleEnvRLAM(plot = True, frameskip= 2)
         
         elif parameter == 'velocity':
 
-            env = velocitytriangleEnvRLAM(plot = True, frameskip= 1, plotlast = False)        
+            env = velocitytriangleEnvRLAM(plot = True, frameskip= 1)        
     
         
     model = PPO.load(model_filename)
-    
-    constantenv = constantEnvRLAM(plot = True)
     num_cpu = 1
 
     obs = env.reset()
     c = 0
+    print("Evaluating model...")
     while True:
         c = c+ 1
         action, _states = model.predict(obs, deterministic = True)

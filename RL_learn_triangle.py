@@ -1,12 +1,11 @@
 import gym
 import json
-import datetime as dt
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize
 from stable_baselines3 import PPO, A2C
 
 from power_triangle_gym import EnvRLAM as powertriangleEnvRLAM
 
-from velocity_triangle_gym import EnvRLAM as timetriangleEnvRLAM   
+from velocity_triangle_gym import EnvRLAM as velocitytriangleEnvRLAM   
 
 from stable_baselines3.ppo import MlpPolicy, CnnPolicy
 from stable_baselines3.common.cmd_util import make_vec_env
@@ -312,13 +311,13 @@ th.autograd.set_detect_anomaly(True)
 def parse_arguments():
     # Command-line flags are defined here.
     parser = argparse.ArgumentParser()
-    #parser = parser.add_mutually_exclusive_group(required=False)
     parser.add_argument('--debug', dest='debug',
                               action='store_true',
                               help="Whether to enter debugging mode") 
     parser.add_argument('--param', dest='param', default = 'velocity',
         help="Which control parameter to vary, options are \'velocity\' and \'power \' ")
-
+    parser.add_argument('--verbose', dest='verbose', default = '0',
+            help="How much output to display during training ") 
     parser.set_defaults(debug=False, param = 'velocity')
 
     return parser.parse_args()
@@ -328,23 +327,33 @@ def main():
     debug = args.debug
     parameter = args.param
     num_cpu = 8 # Number of processes to use
+    verbose = int(args.verbose)
+
+    log_dir = "training_checkpoints/ppo_triangle_"+parameter
+    os.makedirs(log_dir, exist_ok=True)
+    model_dir = "trained_models"
+    os.makedirs(model_dir, exist_ok=True)
+    tb_logdir = 'tensorboard_logs/'
+    os.makedirs(tb_logdir, exist_ok=True)
     # Create the vectorized environment
     if parameter == 'velocity':
-        env = SubprocVecEnv([make_env(timetriangleEnvRLAM(plot = False), i) for i in range(num_cpu)])
+        frameskip = 1
+        env = SubprocVecEnv([make_env(velocitytriangleEnvRLAM(plot = False, frameskip = frameskip, verbose = verbose), i) for i in range(num_cpu)])
         if debug == True:
             print("debugging")
             num_cpu = 1
-            frameskip = 1
-            env = timetriangleEnvRLAM(frameskip = frameskip)
+            
+            env = velocitytriangleEnvRLAM(plot = False, frameskip = frameskip, verbose = verbose)
         else:
             env = VecMonitor(env, log_dir)
     elif parameter == 'power':
-        env = SubprocVecEnv([make_env(powertriangleEnvRLAM(plot = False), i) for i in range(num_cpu)])
+        frameskip = 2
+        env = SubprocVecEnv([make_env(powertriangleEnvRLAM(plot = False, frameskip = frameskip, verbose = verbose), i) for i in range(num_cpu)])
         if debug == True:
             print("debugging")
             num_cpu = 1
-            frameskip = 2
-            env = powertriangleEnvRLAM(frameskip = frameskip)
+            
+            env = powertriangleEnvRLAM(plot = False, frameskip = frameskip, verbose = verbose)
         else:
             env = VecMonitor(env, log_dir)
 
@@ -352,12 +361,7 @@ def main():
         raise Exception("Control parameter not found, please enter 'power' or 'velocity' as argument")
     
     
-    log_dir = "training_checkpoints/ppo_triangle_"+parameter
-    os.makedirs(log_dir, exist_ok=True)
-    model_dir = "trained_models"
-    os.makedirs(model_dir, exist_ok=True)
-    tb_logdir = 'tensorboard_logs/'
-    os.makedirs(tb_logdir, exist_ok=True)
+
     policy_kwargs = dict(activation_fn=th.nn.Tanh, net_arch=[64, 64])
 
     model = PPO('MlpPolicy',env, verbose=1, policy_kwargs=policy_kwargs,  tensorboard_log=tb_logdir+"ppo_triangle_"+parameter)
