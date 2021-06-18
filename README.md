@@ -75,10 +75,6 @@ During training, intermediate model checkpoints will be saved at
  
 
 
-
-
-
-
 ### Defining a custom domain
 #### Changing the powder bed features
 In order to define a custom domain for use with a different problem configuration, the ```EagarTsaiModel.py``` file should be edited directly. Within the ```EagarTsai()``` class instantiation, the thermodynamic properties and domain dimensions can be specified. Additionally, the resolution and boundary conditions can be provided as arguments to the ```EagarTsai``` class. ```bc = 'flux'``` and ```bc = 'temp'``` implements an adiabatic and constant temperature boundary condition respectively. 
