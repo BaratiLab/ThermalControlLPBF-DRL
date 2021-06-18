@@ -44,6 +44,7 @@ To test a trained model on a specific combination of scan path and control param
 
 Once the evaluation is complete, the results are stored in the folder ```results/[scan_path]_[parameter]_control/```. This folder will contain plots of the variation of the melt depth and control parameters over time, as well as their raw values for later analysis. 
 
+Pre-trained models for each of the four possible combinations of scan path and control parameter can be found in ```pretrained_models```.
 ### Training a new model
 In order to train a new model based on the predefined horizontal cross-hatching scan path, enter the command:
 
