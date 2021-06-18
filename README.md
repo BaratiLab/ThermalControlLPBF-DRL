@@ -1,7 +1,7 @@
 # Thermal Control of Laser Powder Bed Fusion using Deep Reinforcement Learning
 
 
-This repository is the implementation of the paper "Thermal Control of Laser Powder Bed Fusion Using Deep Reinforcement Learning". The project makes use of the Deep Reinforcement Library [stable-baselines3](https://github.com/DLR-RM/stable-baselines3) to derive a control policy that maximizes melt pool depth consistency.
+This repository is the implementation of the paper "Thermal Control of Laser Powder Bed Fusion Using Deep Reinforcement Learning", linked [here](https://www.sciencedirect.com/science/article/pii/S2214860421001986). The project makes use of the Deep Reinforcement Library [stable-baselines3](https://github.com/DLR-RM/stable-baselines3) to derive a control policy that maximizes melt pool depth consistency.
 ![drl_am](https://user-images.githubusercontent.com/45725578/122481556-e3491f00-cf9c-11eb-89c4-f8014b72b9a1.gif)
 
 ## Simulation Framework
