@@ -100,16 +100,9 @@ class EnvRLAM(gym.Env):
                 except:
                     breakpoint()
 
-
-                # self.buffer[2, :, :] = self.ETenv.theta[idxx-self.squaresize//2:idxx+self.squaresize//2, idxy-self.squaresize//2:idxy+self.squaresize//2, -1]
-
-                # self.buffer[1, :, :] = self.ETenv.theta[idxx-self.squaresize//2:idxx+self.squaresize//2, idxy, 0:self.squaresize]
-                # self.buffer[0, :, :] = self.ETenv.theta[idxx, idxy-self.squaresize//2:idxy+self.squaresize//2, 0:self.squaresize]
                 self.buffer[0:3] = (self.buffer[0:3] - np.mean(self.buffer[0:3], axis = (1,2))[:, None, None])/(np.std(self.buffer[0:3], axis = (1,2))[:, None, None] + 1e-10)
 
-                # self.buffer[0:3] = (self.buffer[0:3] - 300)/(1700 - 300)
-                # self.buffer[self.buffer > 1] = 1
-                # self.buffer = self.buffer*2 - 1 
+
                 obs = self.buffer
                 self.residual = False
                 self.hv = 0

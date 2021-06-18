@@ -4,16 +4,17 @@ import datetime as dt
 #from stable_baselines3.common.policies import MlpPolicy
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize
 from stable_baselines3 import PPO, A2C
+import argparse
 
 
 
 from power_square_gym import EnvRLAM as powersquareEnvRLAM
 
-from time_square_gym import EnvRLAM as timesquareEnvRLAM
+from velocity_square_gym import EnvRLAM as velocitysquareEnvRLAM
 
 from power_triangle_gym import EnvRLAM as powertriangleEnvRLAM
 
-from time_triangle_gym import EnvRLAM as timetriangleEnvRLAM   
+from velocity_triangle_gym import EnvRLAM as velocitytriangleEnvRLAM   
 
 
 
@@ -43,7 +44,6 @@ import numpy as np
 import time
 from collections import deque
 import os.path as osp
-import json
 import csv
    
 def make_env(env_id, rank, seed=0):
@@ -52,28 +52,42 @@ def make_env(env_id, rank, seed=0):
         return env_id
     return _init
 
+def parse_arguments():
+    parser = argparse.ArgumentParser()  
+    #parser = parser.add_mutually_exclusive_group(required=False)
+    parser.add_argument('--path', dest='path',
+                              default='triangle',
+                              help="Which scan path to use, options are \'square\' and \'triangle \'") 
+    parser.add_argument('--param', dest='param', default = 'velocity',
+        help="Which control parameter to vary, options are \'velocity\' and \'power \' ")
+
+    parser.set_defaults(debug=False, param = 'velocity')
+
+    return parser.parse_args()
 def main():
-    path_toggle =  sys.argv[0] # 0 for HCH path, 1 for triangular path
-    control_toggle =  sys.argv[1] # 0 for power, 1 for velocity
+  
+    args = parse_arguments()
+    path = args.path
+    parameter = args.param
 
     model_filename = input("Enter filename of model zip file: ")
-    if path_toggle == 0:
-        if control_toggle == 0:
+    if path == 'square':
+        if parameter == 'power':
             env = powersquareEnvRLAM(plot = True, frameskip= 1, plotlast = False)
             
 
-        elif control_toggle == 1:
+        elif parameter == 'velocity':
             
-            env = timesquareEnvRLAM(plot = True, frameskip= 1, plotlast = False)
-    if path_toggle == 1:
+            env = velocitysquareEnvRLAM(plot = True, frameskip= 1, plotlast = False)
+    if path == 'triangle':
     
-        if control_toggle == 0:
+        if parameter == 'power':
 
             env = powertriangleEnvRLAM(plot = True, frameskip= 2, plotlast = False)
         
-        elif control_toggle == 1:
+        elif parameter == 'velocity':
 
-            env = timetriangleEnvRLAM(plot = True, frameskip= 1, plotlast = False)        
+            env = velocitytriangleEnvRLAM(plot = True, frameskip= 1, plotlast = False)        
     
         
     model = PPO.load(model_filename)

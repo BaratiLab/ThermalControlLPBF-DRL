@@ -443,12 +443,12 @@ class EagarTsai():
         self.xs = np.arange(-b, 1000e-6 + b ,step = self.dimstep)
         self.ys = np.arange(-b, 1000e-6 + b , step = self.dimstep)
         self.zs = np.arange(-300e-6, 0 + self.dimstep, step = self.dimstep)
-       # breakpoint()
+
         self.theta = np.ones((len(self.xs), len(self.ys), len(self.zs)))*300
         self.toggle =  np.zeros((len(self.xs), len(self.ys)))
         self.D = self.k/(self.rho*self.cp)
         self.contour = np.ones((len(self.xs), len(self.ys)))*180e-6
-       # breakpoint()
+
         self.location = [0, 0]
         self.location_idx = [np.argmin(np.abs(self.xs)), np.argmin(np.abs(self.ys))]
         self.a = 4

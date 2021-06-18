@@ -126,7 +126,7 @@ class EnvRLAM(gym.Env):
             # Plotting diagnostics
             if self.plot:
                     
-                np.savetxt(fig_dir + "/" + "timecontrolsquaretimesnorm",np.array(self.times)*1e3)
+                np.savetxt(fig_dir + "/" + "timecontrolsquaretimes",np.array(self.times)*1e3)
                 np.savetxt(fig_dir + "/" + "timecontrolsquaredepthsframeskip" + str(self.frameskip), np.array(self.depths))
 
                 np.savetxt(fig_dir + "/" + "timecontrolsquarevelocityframeskip" + str(self.frameskip), np.array(self.velocity))
