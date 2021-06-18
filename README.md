@@ -89,4 +89,4 @@ Tensorboard provides resources for monitoring various metrics of the PPO trainin
 
 ```tensorboard --log_dir ./tensorboard_logs/ppo_[scan_path]_[parameter]/ppo_[scan_path]_[parameter]_[run_ID]```
 
-Tensorboard log files are periodically saved during training, with information on various loss metrics, cumulative reward.
+Tensorboard log files are periodically saved during training, with information on cumulative reward as well as various loss metrics.
