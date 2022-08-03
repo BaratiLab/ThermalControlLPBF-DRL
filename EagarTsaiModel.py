@@ -3,9 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
 import scipy.integrate as integrate
-import numba
-from numba import jitclass, njit
-from numba import boolean, int_, float64, uint8
+
 import matplotlib.ticker as ticker
 from scipy.ndimage import gaussian_filter
 from scipy import optimize
@@ -15,7 +13,7 @@ import time
 from scipy import special
 import sys
 from pylab import gca
-
+from skimage import measure
 
 def frame_tick(frame_width=2, tick_width=1.5):
     ax = gca()
@@ -42,16 +40,16 @@ def plot(theta, nrows, ncols, xs, ys, zs):
     scale_y = 1e-6
     ticks_x = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x/scale_x))
     ticks_y = ticker.FuncFormatter(lambda y, pos: '{0:g}'.format(y/scale_y))
-    iter = 0
+    iteration = 0
     for ax, pcm in zip(axes, pcms):
         ax.set_aspect('equal')
         ax.xaxis.set_major_formatter(ticks_x)
         ax.yaxis.set_major_formatter(ticks_y)
         figure.colorbar(pcm, ax=ax)
-        if iter > 0:
+        if iteration > 0:
             plt.sca(ax)
             plt.xticks([-300e-6, 0])
-        iter += 1
+        iteration += 1
 
     figure.tight_layout()
 # @njit
@@ -285,16 +283,16 @@ class Solution():
             lambda x, pos: '{0:g}'.format(x/scale_x))
         ticks_y = ticker.FuncFormatter(
             lambda y, pos: '{0:g}'.format(y/scale_y))
-        iter = 0
+        iteration = 0
         for ax, pcm in zip(axes, pcms):
             ax.set_aspect('equal')
             ax.xaxis.set_major_formatter(ticks_x)
             ax.yaxis.set_major_formatter(ticks_y)
             figure.colorbar(pcm, ax=ax)
-            if iter > 0:
+            if iteration > 0:
                 plt.sca(ax)
                 plt.xticks([-300e-6, 0])
-            iter += 1
+            iteration += 1
         figure.tight_layout()
 
 
@@ -376,16 +374,16 @@ class CornerSolution():
             lambda x, pos: '{0:g}'.format(x/scale_x))
         ticks_y = ticker.FuncFormatter(
             lambda y, pos: '{0:g}'.format(y/scale_y))
-        iter = 0
+        iteration = 0
         for ax, pcm in zip(axes, pcms):
             ax.set_aspect('equal')
             ax.xaxis.set_major_formatter(ticks_x)
             ax.yaxis.set_major_formatter(ticks_y)
             figure.colorbar(pcm, ax=ax)
-            if iter > 0:
+            if iteration > 0:
                 plt.sca(ax)
                 plt.xticks([-300e-6, 0])
-            iter += 1
+            iteration += 1
         figure.tight_layout()
 
 
@@ -465,16 +463,16 @@ class EdgeSolution():
             lambda x, pos: '{0:g}'.format(x/scale_x))
         ticks_y = ticker.FuncFormatter(
             lambda y, pos: '{0:g}'.format(y/scale_y))
-        iter = 0
+        iteration = 0
         for ax, pcm in zip(axes, pcms):
             ax.set_aspect('equal')
             ax.xaxis.set_major_formatter(ticks_x)
             ax.yaxis.set_major_formatter(ticks_y)
             figure.colorbar(pcm, ax=ax)
-            if iter > 0:
+            if iteration > 0:
                 plt.sca(ax)
                 plt.xticks([-300e-6, 0])
-            iter += 1
+            iteration += 1
         figure.tight_layout()
 
 
@@ -829,7 +827,7 @@ class EagarTsai():
             lambda x, pos: '{0:g}'.format(x/scale_x))
         ticks_y = ticker.FuncFormatter(
             lambda y, pos: '{0:g}'.format(y/scale_y))
-        iter = 0
+        iteration = 0
         titles = ["X - Y plane", "X - Z plane", "Y - Z plane"]
         axes[0].set_xlabel(r"x [$\mu$m]")
         axes[0].set_ylabel(r"y [$\mu$m]")
@@ -847,7 +845,7 @@ class EagarTsai():
                 self.P))) + "W" + " Velocity: " + str(np.around(self.V, decimals=2)) + r" [m/s]")
             clb = fig.colorbar(pcm, ax=axis)
             clb.ax.set_title(r'T [$K$]')
-            iter += 1
+            iteration += 1
         return figures
 
     def diffuse(self, dt):
@@ -897,24 +895,14 @@ class EagarTsai():
             np.argmax(self.theta[:, :, -1]), self.theta[:, :, -1].shape)[1]
 
         if calc_length:
-            f = interp.CubicSpline(self.xs, self.theta[:, y_center, -1] - 1673)
+            prop = measure.regionprops(np.array(self.theta[:,:,-1]>1673, dtype = 'int'))
+            prop_l = prop[0].major_axis_length*self.dimstep
+            length =  prop_l
 
-            root = optimize.brentq(
-                f, self.xs[1], self.location[0] - self.dimstep)
-            root2 = optimize.brentq(
-                f, self.location[0] - self.dimstep, self.xs[-1])
-            print("Length: " + str((root2 - root)*1e6))
-            length = root2 - root
         if calc_width:
-            widths = []
-            for i in range(len(self.xs)):
-                g = interp.CubicSpline(self.ys, self.theta[i, :, -1] - 1673)
-                if self.theta[i, y_center, -1] > 1673:
-                    root = optimize.brentq(g, self.ys[1], 0)
-                    root2 = optimize.brentq(g, 0, self.ys[-1])
-                    widths.append(np.abs(root2-root))
-            print("Width: " + str(np.max(widths)*1e6))
-            width = np.max(widths)
+            prop = measure.regionprops(np.array(self.theta[:,:,-1]>1673, dtype = 'int'))
+            prop_w = prop[0].minor_axis_length*self.dimstep
+            width = prop_w
 
         depths = []
         for j in range(len(self.ys)):
@@ -931,6 +919,12 @@ class EagarTsai():
             depth = 0
         else:
             depth = np.min(depths)
+        if calc_length and not calc_width:
+            return length, depth
+        elif calc_width and not calc_length:
+            return width, depth
+        elif calc_width and calc_length:
+            return width, length, depth 
         return depth
 
     def rotate(self, sol, phi):

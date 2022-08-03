@@ -2,10 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
 import scipy.integrate as integrate
-import numba
 import os
-from numba import jitclass, njit
-from numba import boolean, int_, float64, uint8
+
 import matplotlib.ticker as ticker
 from scipy.ndimage import gaussian_filter
 from scipy import optimize
@@ -16,22 +14,7 @@ from scipy import special
 import sys
 from pylab import gca
 from EagarTsaiModel import EagarTsai
-spec = [
-    ('P', int_),
-    ('V', float64),
-    ('sigma', float64),
-    ('A', float64),
-    ('rho', float64),
-    ('cp', int_),
-    ('k', float64),
-    ('dimstep', float64),
-    ('xs', float64[:]),
-    ('ys', float64[:]),
-    ('zs', float64[:]),
-    ('theta', float64[:, :, :]),
-    ('D', float64),
-    ('a', int_)
-]
+
 # This program simulates the heat conduction induced by a moving heat source
 # Dependencies: numba, scipy
 # Class: Eagar-Tsai implements collective strategy for solving heat source by arranging solutions of the ET equation
@@ -58,8 +41,8 @@ def zigzag(plotting=False, resolution=10e-6, bc='flux'):
     file_prefix = "figures/baseline_simulation_figs/zz" + \
         '_' + res_text + '_' + bc + '/'
     os.makedirs(file_prefix, exist_ok=True)
-    for iter in range(21):
-        if iter % 4 == 0:
+    for iteration in range(21):
+        if iteration % 4 == 0:
             for dt in np.arange(0, 1200e-6, 125e-6):
 
                 zz.forward(125e-6, 0)
@@ -75,7 +58,7 @@ def zigzag(plotting=False, resolution=10e-6, bc='flux'):
                         file_prefix + '_z' + '%04d' % c + ".png")
                 c += 1
 
-        if iter % 4 == 1 or iter % 4 == 3:
+        if iteration % 4 == 1 or iteration % 4 == 3:
             for dt in np.arange(0, 120e-6, 125e-6):
                 zz.forward(125e-6, np.pi/2)
                 depth.append(zz.meltpool())
@@ -89,7 +72,7 @@ def zigzag(plotting=False, resolution=10e-6, bc='flux'):
                     figures[2].savefig(
                         file_prefix + '_z' + '%04d' % c + ".png")
                 c += 1
-        if iter % 4 == 2:
+        if iteration % 4 == 2:
             for dt in np.arange(0, 1200e-6, 125e-6):
                 zz.forward(125e-6, np.pi)
                 depth.append(zz.meltpool())
@@ -105,24 +88,25 @@ def zigzag(plotting=False, resolution=10e-6, bc='flux'):
 
                 c += 1
         plt.close('all')
-
-    x_oscommand = 'convert ' + file_prefix + \
-        '*_x*png -delay 10 ' + file_prefix + 'x.gif'
-    y_oscommand = 'convert ' + file_prefix + \
-        '*_y*png -delay 10 ' + file_prefix + 'y.gif'
-    z_oscommand = 'convert ' + file_prefix + \
-        '*_z*png -delay 10 ' + file_prefix + 'z.gif'
-    rmcommand = 'rm ' + file_prefix + '*png'
-    os.system(x_oscommand)
-    os.system(y_oscommand)
-    os.system(z_oscommand)
-    os.system(rmcommand)
+    if plotting:
+        x_oscommand = 'convert ' + file_prefix + \
+            '*_x*png -delay 10 ' + file_prefix + 'x.gif'
+        y_oscommand = 'convert ' + file_prefix + \
+            '*_y*png -delay 10 ' + file_prefix + 'y.gif'
+        z_oscommand = 'convert ' + file_prefix + \
+            '*_z*png -delay 10 ' + file_prefix + 'z.gif'
+        rmcommand = 'rm ' + file_prefix + '*png'
+        os.system(x_oscommand)
+        os.system(y_oscommand)
+        os.system(z_oscommand)
+        os.system(rmcommand)
 
     plt.clf()
     plt.plot(np.array(times)*1e3, np.array(depth)*1e6)
     plt.xlabel(r'Time, $t$ [ms]')
     plt.ylabel(r'Melt Depth, $d$, [$\mu$m]')
     plt.savefig(file_prefix + 'depths.png')
+    plt.clf()
 
 
 def closezigzag(plotting=False, resolution=20e-6, bc='flux'):
@@ -137,8 +121,8 @@ def closezigzag(plotting=False, resolution=20e-6, bc='flux'):
     file_prefix = "figures/baseline_simulation_figs/closezz" + \
         '_' + res_text + '_' + bc + '/'
     os.makedirs(file_prefix, exist_ok=True)
-    for iter in range(21):
-        if iter % 4 == 0:
+    for iteration in range(21):
+        if iteration % 4 == 0:
             for dt in np.arange(0, 1200e-6, 125e-6):
 
                 zz.forward(125e-6, 0, P=145)
@@ -155,7 +139,7 @@ def closezigzag(plotting=False, resolution=20e-6, bc='flux'):
                 depth.append(zz.meltpool())
                 times.append(zz.time)
 
-        if iter % 4 == 1 or iter % 4 == 3:
+        if iteration % 4 == 1 or iteration % 4 == 3:
             for dt in np.arange(0, 120e-6, 125e-6):
                 zz.forward(125e-6, np.pi/2)
                 if plotting:
@@ -169,7 +153,7 @@ def closezigzag(plotting=False, resolution=20e-6, bc='flux'):
                 c += 1
                 depth.append(zz.meltpool())
                 times.append(zz.time)
-        if iter % 4 == 2:
+        if iteration % 4 == 2:
             for dt in np.arange(0, 1200e-6, 125e-6):
                 zz.forward(125e-6, np.pi)
 
@@ -185,28 +169,25 @@ def closezigzag(plotting=False, resolution=20e-6, bc='flux'):
                 depth.append(zz.meltpool())
                 times.append(zz.time)
 
-    if not plotting:
-        plt.plot(np.array(times)*1e3, np.array(depth)*1e6)
-        plt.xlabel(r'Time, $t$ [ms]')
-        plt.ylabel(r'Melt Depth, $d$, [$\mu$m]')
-        plt.show()
 
-    x_oscommand = 'convert ' + file_prefix + \
-        '*_x*png -delay 10 ' + file_prefix + 'x.gif'
-    y_oscommand = 'convert ' + file_prefix + \
-        '*_y*png -delay 10 ' + file_prefix + 'y.gif'
-    z_oscommand = 'convert ' + file_prefix + \
-        '*_z*png -delay 10 ' + file_prefix + 'z.gif'
-    rmcommand = 'rm ' + file_prefix + '*png'
-    os.system(x_oscommand)
-    os.system(y_oscommand)
-    os.system(z_oscommand)
-    os.system(rmcommand)
+    if plotting:
+        x_oscommand = 'convert ' + file_prefix + \
+            '*_x*png -delay 10 ' + file_prefix + 'x.gif'
+        y_oscommand = 'convert ' + file_prefix + \
+            '*_y*png -delay 10 ' + file_prefix + 'y.gif'
+        z_oscommand = 'convert ' + file_prefix + \
+            '*_z*png -delay 10 ' + file_prefix + 'z.gif'
+        rmcommand = 'rm ' + file_prefix + '*png'
+        os.system(x_oscommand)
+        os.system(y_oscommand)
+        os.system(z_oscommand)
+        os.system(rmcommand)
     plt.clf()
     plt.plot(np.array(times)*1e3, np.array(depth)*1e6)
     plt.xlabel(r'Time, $t$ [ms]')
     plt.ylabel(r'Melt Depth, $d$, [$\mu$m]')
     plt.savefig(file_prefix + 'depths.png')
+    plt.clf()
 
 
 def diagonal(plotting=False, resolution=20e-6, bc='flux'):
@@ -283,24 +264,24 @@ def diagonal(plotting=False, resolution=20e-6, bc='flux'):
             figures[0].savefig(file_prefix + '_x' + '%04d' % c + ".png")
             figures[1].savefig(file_prefix + '_y' + '%04d' % c + ".png")
             figures[2].savefig(file_prefix + '_z' + '%04d' % c + ".png")
-
-    x_oscommand = 'convert ' + file_prefix + \
-        '*_x*png -delay 10 ' + file_prefix + 'x.gif'
-    y_oscommand = 'convert ' + file_prefix + \
-        '*_y*png -delay 10 ' + file_prefix + 'y.gif'
-    z_oscommand = 'convert ' + file_prefix + \
-        '*_z*png -delay 10 ' + file_prefix + 'z.gif'
-    rmcommand = 'rm ' + file_prefix + '*png'
-    os.system(x_oscommand)
-    os.system(y_oscommand)
-    os.system(z_oscommand)
-    os.system(rmcommand)
+    if plotting:
+        x_oscommand = 'convert ' + file_prefix + \
+            '*_x*png -delay 10 ' + file_prefix + 'x.gif'
+        y_oscommand = 'convert ' + file_prefix + \
+            '*_y*png -delay 10 ' + file_prefix + 'y.gif'
+        z_oscommand = 'convert ' + file_prefix + \
+            '*_z*png -delay 10 ' + file_prefix + 'z.gif'
+        rmcommand = 'rm ' + file_prefix + '*png'
+        os.system(x_oscommand)
+        os.system(y_oscommand)
+        os.system(z_oscommand)
+        os.system(rmcommand)
     plt.clf()
     plt.plot(np.array(times)*1e3, np.array(depth)*1e6)
     plt.xlabel(r'Time, $t$ [ms]')
     plt.ylabel(r'Melt Depth, $d$, [$\mu$m]')
     plt.savefig(file_prefix + 'depths.png')
-
+    plt.clf()
 
 def triangle(plotting=False, resolution=5e-6, bc='temp'):
     tri = EagarTsai(resolution=resolution, bc=bc, spacing=20e-6)
@@ -346,28 +327,29 @@ def triangle(plotting=False, resolution=5e-6, bc='temp'):
             figures[0].savefig(file_prefix + '_x' + '%04d' % c + ".png")
             figures[1].savefig(file_prefix + '_y' + '%04d' % c + ".png")
             figures[2].savefig(file_prefix + '_z' + '%04d' % c + ".png")
-    x_oscommand = 'convert ' + file_prefix + \
-        '*_x*png -delay 10 ' + file_prefix + 'x.gif'
-    y_oscommand = 'convert ' + file_prefix + \
-        '*_y*png -delay 10 ' + file_prefix + 'y.gif'
-    z_oscommand = 'convert ' + file_prefix + \
-        '*_z*png -delay 10 ' + file_prefix + 'z.gif'
-    rmcommand = 'rm ' + file_prefix + '*png'
-    os.system(x_oscommand)
-    os.system(y_oscommand)
-    os.system(z_oscommand)
-    os.system(rmcommand)
+    if plotting:
+        x_oscommand = 'convert ' + file_prefix + \
+            '*_x*png -delay 10 ' + file_prefix + 'x.gif'
+        y_oscommand = 'convert ' + file_prefix + \
+            '*_y*png -delay 10 ' + file_prefix + 'y.gif'
+        z_oscommand = 'convert ' + file_prefix + \
+            '*_z*png -delay 10 ' + file_prefix + 'z.gif'
+        rmcommand = 'rm ' + file_prefix + '*png'
+        os.system(x_oscommand)
+        os.system(y_oscommand)
+        os.system(z_oscommand)
+        os.system(rmcommand)
     plt.clf()
 
     plt.plot(np.array(times)*1e3, np.array(depth)*1e6)
     plt.xlabel(r'Time, $t$ [ms]')
     plt.ylabel(r'Melt Depth, $d$, [$\mu$m]')
     plt.savefig(file_prefix + 'depths.png')
-
+    plt.clf()
 
 def main():
     # Test cases: zigzag, square, triangle, diagonal
-    plotting = True
+    plotting = False
     zigzag(resolution=20e-6, plotting=plotting, bc='flux')
     diagonal(resolution=20e-6, plotting=plotting, bc='flux')
     triangle(resolution=20e-6, plotting=plotting, bc='flux')
