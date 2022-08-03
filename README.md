@@ -16,7 +16,7 @@ The following packages are required in order to run the associated code:
 * ```gym==0.17.3```
 * ```torch==1.5.0```
 * ```stable_baselines3==0.7.0```
-* ```numba==0.50.1```
+* ```scikit-image==0.19.3```
 
 
 These packages can be installed independently, or all at once by running ```pip install -r requirements.txt```. We recommend that these packages are installed in a new conda environment to avoid clashes with existing package installations. Instructions on defining a new conda environment can be found [here](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).
